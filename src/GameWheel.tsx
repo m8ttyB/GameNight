@@ -68,8 +68,8 @@ const GameWheel: React.FC<GameWheelProps> = ({ games, onSpin, spinning, setSpinn
       setSelectedIdx(idx);
       const anglePerGame = 360 / numGames;
       const extraSpins = 10; // for visual effect
-      // Calculate final angle so that the center of the winning segment is at the bottom (270°)
-      const finalAngle = 360 * extraSpins + 270 - (idx * anglePerGame + anglePerGame / 2);
+      // Calculate final angle so that the center of the winning segment is at the top (90°)
+      const finalAngle = 360 * extraSpins + 90 - (idx * anglePerGame + anglePerGame / 2);
       setLastFinalAngle(finalAngle);
       if (wheelRef.current) {
         // Allow a reflow for the transition to take effect
@@ -85,17 +85,17 @@ const GameWheel: React.FC<GameWheelProps> = ({ games, onSpin, spinning, setSpinn
     }, 20); // short delay to ensure reset before spin
   };
 
-  // Fixed pointer style at the bottom of the wheel
+  // Fixed pointer style at the top of the wheel
   const pointerBaseStyle: React.CSSProperties = {
     position: 'absolute',
     left: '50%',
-    bottom: 40, // 40px up from the bottom edge, inside the wheel
-    transform: 'translateX(-50%)',
+    top: -36, // 36px above the top edge, outside the wheel
+    transform: 'translateX(-50%) rotate(180deg)',
     width: 0,
     height: 0,
     borderLeft: '16px solid transparent',
     borderRight: '16px solid transparent',
-    borderTop: '36px solid #e74c3c', // arrow points up
+    borderBottom: '36px solid #e74c3c', // arrow points down
     zIndex: 2,
     pointerEvents: 'none',
   };
