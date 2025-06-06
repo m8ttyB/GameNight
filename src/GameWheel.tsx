@@ -15,6 +15,7 @@ const GameWheel: React.FC<GameWheelProps> = ({ games, onSpin, spinning, setSpinn
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wheelRef = useRef<HTMLDivElement>(null);
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+  const [lastFinalAngle, setLastFinalAngle] = useState<number>(0);
 
   // Draw the wheel
   React.useEffect(() => {
@@ -55,29 +56,33 @@ const GameWheel: React.FC<GameWheelProps> = ({ games, onSpin, spinning, setSpinn
   // Spin logic
   const spinWheel = () => {
     if (spinning || games.length === 0) return;
-    setSpinning(true);
-    const numGames = games.length;
-    const idx = Math.floor(Math.random() * numGames);
-    setSelectedIdx(idx);
-    const anglePerGame = 360 / numGames;
-    const extraSpins = 10; // for visual effect
-    // Calculate final angle so that the center of the winning segment is at the bottom (270°)
-    const finalAngle = 360 * extraSpins + 270 - (idx * anglePerGame + anglePerGame / 2);
+    // Reset wheel to 0deg before starting a new spin
     if (wheelRef.current) {
-      wheelRef.current.style.transition = 'transform 10s cubic-bezier(0.33, 1, 0.68, 1)';
-      wheelRef.current.style.transform = `rotate(${finalAngle}deg)`;
+      wheelRef.current.style.transition = 'none';
+      wheelRef.current.style.transform = 'rotate(0deg)';
     }
     setTimeout(() => {
-      setSpinning(false);
-      onSpin(games[idx]);
-      // Reset wheel for next spin
+      setSpinning(true);
+      const numGames = games.length;
+      const idx = Math.floor(Math.random() * numGames);
+      setSelectedIdx(idx);
+      const anglePerGame = 360 / numGames;
+      const extraSpins = 10; // for visual effect
+      // Calculate final angle so that the center of the winning segment is at the bottom (270°)
+      const finalAngle = 360 * extraSpins + 270 - (idx * anglePerGame + anglePerGame / 2);
+      setLastFinalAngle(finalAngle);
       if (wheelRef.current) {
-        setTimeout(() => {
-          wheelRef.current!.style.transition = 'none';
-          wheelRef.current!.style.transform = 'rotate(0deg)';
-        }, 500);
+        // Allow a reflow for the transition to take effect
+        void wheelRef.current.offsetWidth;
+        wheelRef.current.style.transition = 'transform 10s cubic-bezier(0.33, 1, 0.68, 1)';
+        wheelRef.current.style.transform = `rotate(${finalAngle}deg)`;
       }
-    }, 10000);
+      setTimeout(() => {
+        setSpinning(false);
+        onSpin(games[idx]);
+        // Do NOT reset the wheel here; keep it at the final position until next spin
+      }, 10000);
+    }, 20); // short delay to ensure reset before spin
   };
 
   // Fixed pointer style at the bottom of the wheel
