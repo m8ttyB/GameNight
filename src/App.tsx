@@ -1,24 +1,36 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useState, useEffect } from 'react';
 import './App.css';
+import GameWheel from './GameWheel';
+import GameListManager from './GameListManager';
+
+// Removed placeholder components for GameWheel and GameListManager
 
 function App() {
+  const [games, setGames] = useState<string[]>([]);
+  const [spinning, setSpinning] = useState(false);
+  const [selectedGame, setSelectedGame] = useState<string | null>(null);
+
+  // Load games from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('gameWheelGames');
+    if (saved) setGames(JSON.parse(saved));
+  }, []);
+
+  // Save games to localStorage when changed
+  useEffect(() => {
+    localStorage.setItem('gameWheelGames', JSON.stringify(games));
+  }, [games]);
+
+  const handleSpin = (selected: string) => {
+    setSelectedGame(selected);
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <h1>Game Night Wheel</h1>
+      <GameListManager games={games} setGames={setGames} />
+      <GameWheel games={games} onSpin={handleSpin} spinning={spinning} setSpinning={setSpinning} />
+      {selectedGame && <h2>Selected Game: {selectedGame}</h2>}
     </div>
   );
 }
